@@ -1,0 +1,10 @@
+Artificial Intelligence is a field of computer science focused
+on creating systems that can perform tasks that normally require
+human intelligence.
+
+Large language models can process and generate natural language.
+Retrieval-Augmented Generation allows an AI system to retrieve
+external information before generating an answer.
+
+AI agents can use tools to perform tasks and interact with
+external systems.

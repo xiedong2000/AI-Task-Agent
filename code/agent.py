@@ -4,8 +4,7 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from tools import calculator
-
+from tools import calculator,read_document
 
 load_dotenv()
 
@@ -27,6 +26,23 @@ tools = [
                     }
                 },
                 "required": ["expression"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_document",
+            "description": "Read the content of a document.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename": {
+                        "type": "string",
+                        "description": "The name of the document to read."
+                    }
+                },
+                "required": ["filename"]
             }
         }
     }
@@ -65,6 +81,26 @@ def run_agent(user_question):
                 result = calculator(expression)
 
                 print(f"Tool result: {result}")
+
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": result
+                    }
+                )
+
+            elif tool_call.function.name == "read_document":
+                arguments = json.loads(tool_call.function.arguments)
+
+                filename = arguments["filename"]
+
+                print(f"\nTool selected: read_document")
+                print(f"Filename: {filename}")
+
+                result = read_document(filename)
+
+                print(f"Tool result: \n{result}")
 
                 messages.append(
                     {
