@@ -71,11 +71,16 @@ def run_agent(user_question):
         {
             "role": "system",
             "content": (
-                "You are an AI task agent. "
+                " You are an AI task agent. "
                 "Use the available tools when appropriate. "
-                "When a mathematical calculation is required, use the calculator tool. "
+                "When a calculation is requested, you MUST use the calculator tool. "
+                "Never perform arithmetic yourself, even if the calculation is simple. "
                 "When information must be retrieved from a document, use the read_document tool. "
-                "When the user asks for the current date or time, use the get_current_datetime tool."
+                "When the user asks for the current date or time, use the get_current_datetime tool. "
+                "When a task requires multiple steps, complete every requested step "
+                "using the appropriate tools before providing the final answer. "
+                "Do not provide the final answer until all required tool operations "
+                "have been completed."
             )
         },
         {
@@ -85,10 +90,8 @@ def run_agent(user_question):
     ]
 
     max_iterations = 10
-    iteration = 0
 
-    while iteration < max_iterations:
-        iteration += 1
+    for _ in range(max_iterations):
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",
