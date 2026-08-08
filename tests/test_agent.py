@@ -11,19 +11,26 @@ from src.agent import run_agent
 test_cases = [
     {
         "question": "What is 25 * 4?",
-        "expected_tool": "calculator",
+        "expected_tools": ["calculator"],
     },
     {
         "question": "What does docs/sample.txt say about RAG?",
-        "expected_tool": "read_document",
+        "expected_tools": ["read_document"],
     },
     {
         "question": "What is the current date and time?",
-        "expected_tool": "get_current_datetime",
+        "expected_tools": ["get_current_datetime"],
     },
     {
         "question": "What is artificial intelligence?",
-        "expected_tool": None,
+        "expected_tools": [],
+    },
+    {
+        "question": (
+            "Read docs/sample.txt and calculate the average "
+            "of the three project numbers."
+        ),
+        "expected_tools": ["read_document", "calculator"],
     },
 ]
 
@@ -34,23 +41,26 @@ passed = 0
 for test in test_cases:
     print("\n" + "=" * 60)
     print(f"Question: {test['question']}")
-    print(f"Expected tool: {test['expected_tool']}")
+    print(f"Expected tools: {test['expected_tools']}")
 
     result = run_agent(test["question"])
 
     actual_tools = result["tools_used"]
 
-    if test["expected_tool"] is None:
+    if test["expected_tools"] is None:
         success = len(actual_tools) == 0
     else:
-        success = test["expected_tool"] in actual_tools
+        success = all(
+            tool in actual_tools
+            for tool in test["expected_tools"]
+        )
 
     if success:
         print("PASS")
         passed += 1
     else:
         print("FAIL")
-        print(f"Expected: {test['expected_tool']}")
+        print(f"Expected: {test['expected_tools']}")
         print(f"Actual: {actual_tools}")
 
     print(f"Answer: {result['answer']}")
