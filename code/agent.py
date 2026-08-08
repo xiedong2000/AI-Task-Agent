@@ -57,9 +57,14 @@ def run_agent(user_question):
             if tool_call.function.name == "calculator":
                 arguments = json.loads(tool_call.function.arguments)
 
-                result = calculator(
-                    arguments["expression"]
-                )
+                expression = arguments["expression"]
+
+                print(f"\nTool selected: calculator")
+                print(f"Expression: {expression}")
+
+                result = calculator(expression)
+
+                print(f"Tool result: {result}")
 
                 messages.append(
                     {
