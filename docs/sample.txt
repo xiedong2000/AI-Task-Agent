@@ -8,3 +8,6 @@ external information before generating an answer.
 
 AI agents can use tools to perform tasks and interact with
 external systems.
+
+The example AI project contains 120 documents, 240 embeddings,
+and 360 retrieved chunks.

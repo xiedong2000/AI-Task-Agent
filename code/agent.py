@@ -57,22 +57,35 @@ def run_agent(user_question):
         }
     ]
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages,
-        tools=tools,
-        tool_choice="auto"
-    )
+    max_iterations = 10
+    iteration = 0
 
-    message = response.choices[0].message
+    while iteration < max_iterations:
+        iteration += 1
+        
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            tools=tools,
+            tool_choice="auto"
+        )
 
-    if message.tool_calls:
+        message = response.choices[0].message
+
+        # No tool needed - return the final answer
+        if not message.tool_calls:
+            return message.content
+
+        # Add the assistant's tool request to the conversation
         messages.append(message)
 
+        # Execute every tool requested by the model
         for tool_call in message.tool_calls:
-            if tool_call.function.name == "calculator":
-                arguments = json.loads(tool_call.function.arguments)
 
+            tool_name = tool_call.function.name
+            arguments = json.loads(tool_call.function.arguments)
+
+            if tool_call.function.name == "calculator":
                 expression = arguments["expression"]
 
                 print(f"\nTool selected: calculator")
@@ -80,19 +93,7 @@ def run_agent(user_question):
 
                 result = calculator(expression)
 
-                print(f"Tool result: {result}")
-
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "content": result
-                    }
-                )
-
             elif tool_call.function.name == "read_document":
-                arguments = json.loads(tool_call.function.arguments)
-
                 filename = arguments["filename"]
 
                 print(f"\nTool selected: read_document")
@@ -102,13 +103,14 @@ def run_agent(user_question):
 
                 print(f"Tool result: \n{result}")
 
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "content": result
-                    }
-                )
+            # Send the tool result back to the model
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": result
+                }
+            )
 
         final_response = client.chat.completions.create(
             model="gpt-4o-mini",
