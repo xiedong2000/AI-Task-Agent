@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from tools import calculator,read_document, get_current_datetime
+from src.tools import calculator,read_document, get_current_datetime
 
 load_dotenv()
 
@@ -64,9 +64,20 @@ tools = [
     }
 ]
 
-
 def run_agent(user_question):
+    used_tools = []
+
     messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are an AI task agent. "
+                "Use the available tools when appropriate. "
+                "When a mathematical calculation is required, use the calculator tool. "
+                "When information must be retrieved from a document, use the read_document tool. "
+                "When the user asks for the current date or time, use the get_current_datetime tool."
+            )
+        },
         {
             "role": "user",
             "content": user_question
@@ -87,12 +98,14 @@ def run_agent(user_question):
         )
 
         message = response.choices[0].message
-
-        
-
+      
         # No tool needed - return the final answer
         if not message.tool_calls:
-            return message.content
+            # Normal exit
+            return {
+                "answer": message.content,
+                "tools_used": used_tools
+            }
 
         # Add the assistant's tool request to the conversation
         messages.append(message)
@@ -105,6 +118,7 @@ def run_agent(user_question):
         for tool_call in message.tool_calls:
 
             tool_name = tool_call.function.name
+            used_tools.append(tool_name)
             arguments = json.loads(tool_call.function.arguments)
 
             if tool_call.function.name == "calculator":
@@ -146,9 +160,16 @@ def run_agent(user_question):
             messages=messages
         )
 
-        return final_response.choices[0].message.content
+        return {
+            "answer": final_response.choices[0].message.content,
+            "tools_used": used_tools
+        }
 
-    return message.content
+    # Safety-limit exit
+    return {
+        "answer": "Agent stopped after reaching the maximum number of iterations.",
+        "tools_used": used_tools
+    }
 
 
 if __name__ == "__main__":
