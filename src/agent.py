@@ -3,13 +3,14 @@ import os
 import sys
 from pathlib import Path
 
-from dotenv import load_dotenv
-from openai import OpenAI
-
 if __package__ in (None, ""):
     project_root = Path(__file__).resolve().parents[1]
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
+
+from dotenv import load_dotenv
+from openai import OpenAI
+from src.rag_tool import search_documents
 
 try:
     from src.tools import calculator, read_document, get_current_datetime
@@ -36,6 +37,23 @@ tools = [
                     }
                 },
                 "required": ["expression"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_documents",
+            "description": "Search the persistent document database for the most relevant chunks.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The question or phrase to search for in the document database."
+                    }
+                },
+                "required": ["query"]
             }
         }
     },
@@ -158,6 +176,9 @@ def run_agent(user_question):
                 result = get_current_datetime()
 
                 print(f"Tool result: \n{result}")
+
+            elif tool_name == "search_documents":
+                result = search_documents(arguments["query"])
 
             # Send the tool result back to the model
             messages.append(
