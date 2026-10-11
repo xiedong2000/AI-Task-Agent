@@ -1,5 +1,6 @@
 # Virtual environment
 ai-env/
+.venv/
 
 # Environment variables and secrets
 .env

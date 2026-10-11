@@ -1,10 +1,20 @@
 import json
 import os
+import sys
+from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from src.tools import calculator,read_document, get_current_datetime
+if __package__ in (None, ""):
+    project_root = Path(__file__).resolve().parents[1]
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+
+try:
+    from src.tools import calculator, read_document, get_current_datetime
+except ModuleNotFoundError:
+    from tools import calculator, read_document, get_current_datetime
 
 load_dotenv()
 
